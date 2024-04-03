@@ -14,7 +14,8 @@ if len(mots) == 3:
 else:
     print("Entrée invalide")
 
-createTxt(mot1, True, "")
-createJSON(mot1 ,True, "")
+data = getData(mot1,True,"")
 
-
+infos = getIdEnt(mot1, mot2,data)
+idMot2 = infos["mot2_id"]
+idMot1 = infos["mot1_id"]

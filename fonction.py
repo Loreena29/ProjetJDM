@@ -35,6 +35,8 @@ def getHtml(mot, entrant, rel):
 
     return data
 
+
+
 def createTxt(mot, entrant, rel):
     prod = getHtml(mot, entrant, rel)
     
@@ -64,6 +66,8 @@ def createTxt(mot, entrant, rel):
 
     return fileTxtName
 
+
+
 def mySplit(expression):
     resultats = []
     temporaire = ""
@@ -87,6 +91,7 @@ def mySplit(expression):
                 temporaire = ""
 
     return resultats
+
 
 
 def createJSON(mot, entrant, rel):
@@ -185,3 +190,57 @@ def createJSON(mot, entrant, rel):
         fileTxt.close()
 
     return fileJSONName
+
+
+
+def getData(mot,entrant,rel):
+    createTxt(mot,entrant,rel)
+    createJSON(mot,entrant,rel)
+    
+    # Ouvrir le fichier  Json en lecture
+    if entrant :
+        fileJSONName = "src/json/" + mot +rel+ "_e.json"
+    else:
+        fileJSONName = "src/json/" + mot +rel+ "_s.json"
+    fileJSON = open(fileJSONName, "r")
+    data = json.load(fileJSON)
+    fileJSON.close()
+    return data
+
+
+
+def getIdEnt(mot1, mot2, data):
+    # Extraction des données d'entités du fichier JSON
+    json_entities = data["e"]
+
+    # Initialisation des identifiants d'entité et de mot
+    mot2_id = -1
+    mot1_id = -1
+
+    # Parcours de toutes les entités dans les données JSON
+    for entity_key in json_entities:
+        # Récupération du nom de l'entité
+        entity_name = json_entities[entity_key]['name']
+        
+        # Suppression des deux premières occurrences de guillemets simples pour le nom
+        cleaned_entity_name = entity_name.replace("'", "", 2)
+        
+        # Vérification si l'entité correspond à l'entité recherchée
+        if cleaned_entity_name == mot2 :
+            print(entity_key + ": ")
+            print(json_entities[entity_key]['name'])
+            # Attribution de l'identifiant de l'entité
+            mot2_id = entity_key
+        
+        # Vérification si l'entité correspond au mot recherché
+        if cleaned_entity_name == mot1:
+            print(entity_key + ": ")
+            print(json_entities[entity_key]['name'])
+            # Attribution de l'identifiant du mot
+            mot1_id = entity_key
+
+    # Création du résultat contenant les identifiants d'entité et de mot
+    result = {"mot2_id": mot2_id, "mot1_id": mot1_id}
+    return result
+
+
