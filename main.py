@@ -1,1 +1,20 @@
-5555
+from fonction import *
+
+entre = input("Entrez une relation : ")
+
+#separer l'entrée en 3 mots 
+mots = entre.split()
+if len(mots) == 3:
+    # Le premier mot est le premier mot
+    mot1 = mots[0]
+    # Le deuxième mot est la relation
+    relation = mots[1]
+    # Le reste de la phrase est le deuxième mot
+    mot2 = mots[2]
+else:
+    print("Entrée invalide")
+
+createTxt(mot1, True, "")
+createJSON(mot1 ,True, "")
+
+
