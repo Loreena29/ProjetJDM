@@ -19,3 +19,7 @@ data = getData(mot1,True,"")
 infos = getIdEnt(mot1, mot2,data)
 idMot2 = infos["mot2_id"]
 idMot1 = infos["mot1_id"]
+
+idRel = getIdRel(relation,data)
+
+resultat = isRelEntrante(idMot1,idRel,data)

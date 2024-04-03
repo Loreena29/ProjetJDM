@@ -39,7 +39,8 @@ def getHtml(mot, entrant, rel):
 
 def createTxt(mot, entrant, rel):
     prod = getHtml(mot, entrant, rel)
-    
+    mot = mot.replace(" ", "_")
+    mot = mot.replace("'", "")
     # Spécifier le chemin du dossier où vous voulez enregistrer les fichiers
     dossier = "src/txt/"
     
@@ -196,7 +197,7 @@ def createJSON(mot, entrant, rel):
 def getData(mot,entrant,rel):
     createTxt(mot,entrant,rel)
     createJSON(mot,entrant,rel)
-    
+    mot = mot.replace(" ", "_")
     # Ouvrir le fichier  Json en lecture
     if entrant :
         fileJSONName = "src/json/" + mot +rel+ "_e.json"
@@ -227,16 +228,10 @@ def getIdEnt(mot1, mot2, data):
         
         # Vérification si l'entité correspond à l'entité recherchée
         if cleaned_entity_name == mot2 :
-            print(entity_key + ": ")
-            print(json_entities[entity_key]['name'])
-            # Attribution de l'identifiant de l'entité
             mot2_id = entity_key
         
         # Vérification si l'entité correspond au mot recherché
         if cleaned_entity_name == mot1:
-            print(entity_key + ": ")
-            print(json_entities[entity_key]['name'])
-            # Attribution de l'identifiant du mot
             mot1_id = entity_key
 
     # Création du résultat contenant les identifiants d'entité et de mot
@@ -244,3 +239,39 @@ def getIdEnt(mot1, mot2, data):
     return result
 
 
+def getIdRel(rel, data):
+    jsonDataRt = data["rt"]
+    idRt = -1
+    for entity in jsonDataRt:
+        name = jsonDataRt[entity]['trname']
+        x = name.replace("'", "", 2)
+        if x == rel:
+            idRt = entity
+            break
+    return idRt
+
+
+
+def isRelEntrante(idMot1, idRel, data):
+    jsonDataR = data["r"]
+    resultat = False
+    w = ""
+    print(idMot1)
+    print(len(jsonDataR))
+    for entity in jsonDataR:
+        node2 = jsonDataR[entity]['node1']
+        x = node2.replace("'", "", 2)
+        type = jsonDataR[entity]['type']
+        y = type.replace("'", "", 2)
+        print("x{}:idMot1{}".format(x,idMot1))
+        print("y{}:idRel{}".format(y,idRel))
+        w = jsonDataR[entity]["w"]
+
+        if x == idMot1 and y == idRel :
+            print(entity + ": ")
+            print(jsonDataR[entity]['node1'])
+            resultat = True
+
+            break
+    print(resultat)
+    return [resultat,w]
