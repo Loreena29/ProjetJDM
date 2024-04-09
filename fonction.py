@@ -252,26 +252,47 @@ def getIdRel(rel, data):
 
 
 
-def isRelEntrante(idMot1, idRel, data):
+def isRelEntrante(idMot1, idMot2, idRel, data):
     jsonDataR = data["r"]
     resultat = False
     w = ""
-    print(idMot1)
-    print(len(jsonDataR))
     for entity in jsonDataR:
-        node2 = jsonDataR[entity]['node1']
-        x = node2.replace("'", "", 2)
-        type = jsonDataR[entity]['type']
-        y = type.replace("'", "", 2)
-        print("x{}:idMot1{}".format(x,idMot1))
-        print("y{}:idRel{}".format(y,idRel))
+        x = jsonDataR[entity]['node1'].replace("'", "", 2)
+        y = jsonDataR[entity]['type'].replace("'", "", 2)
+        z = jsonDataR[entity]['node2'].replace("'", "", 2)
         w = jsonDataR[entity]["w"]
 
-        if x == idMot1 and y == idRel :
-            print(entity + ": ")
-            print(jsonDataR[entity]['node1'])
+        
+        if x == idMot1 and y == idRel and z == idMot2 :
             resultat = True
 
             break
-    print(resultat)
+    #print(resultat)
     return [resultat,w]
+
+
+# la fonction marche pas, l'appel à isRelEntrante renvoie tjr False | peut-être une erreur de type (str/int)
+def isRelInductive(idMot1, idMot2, idRel, data):
+    json_relations = data["r"]
+    json_entities = data["e"]
+    resultat = False
+    w = ""
+    idRelationIsa = getIdRel("r_isa", data)
+    compteur = 0
+    limit = 10 # limite de mots pris / à voir  selon le temps de traitement
+
+    for relation in json_relations:
+        if json_relations[relation]['type'] == '6' and json_relations[relation]['node1'] == idMot1 and int(json_relations[relation]['w']) > 0:
+        # s'il s'agit d'un mot1 is_a XX
+            allData = json_relations[relation]
+            #print(json_entities[allData['node2']]['name'], allData["w"])
+            isRel = isRelEntrante(str(allData['node2']), str(idMot2), str(idRel), data)
+            print(str(allData['node2']), str(idMot2), str(idRel), allData["node2"]["name"])
+            print(isRel)
+            if isRel[0] == True:
+                print(isRel)
+
+        # stop au bout de [limit] mots
+        compteur += 1
+        if compteur >= limit:
+            break

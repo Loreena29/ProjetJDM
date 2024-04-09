@@ -20,6 +20,10 @@ infos = getIdEnt(mot1, mot2,data)
 idMot2 = infos["mot2_id"]
 idMot1 = infos["mot1_id"]
 
-idRel = getIdRel(relation,data)
 
-resultat = isRelEntrante(idMot1,idRel,data)
+idRel = getIdRel(relation,data)
+#resultat = isRelEntrante(idMot1, idMot2, idRel, data)
+
+resultatInductive = isRelInductive(idMot1, idMot2, idRel, data)
+
+# liste relations : https://www.jeuxdemots.org/jdm-about-detail-relations.php
