@@ -45,22 +45,40 @@ def createTxt(mot, entrant, rel):
     dossier = "src/txt/"
     
     if entrant:
-        fileTxtName = os.path.join(dossier, mot.replace(" ", "_") + rel + "_e.txt")
+        fileTxtName = dossier + mot.replace(" ", "_")
+        if(rel == ""):
+            fileTxtName += "_e.txt"
+        else:
+            fileTxtName += "_" + rel + "_e.txt"        
+        fileTxtName = os.path.join(fileTxtName)
     else:
-        fileTxtName = os.path.join(dossier, mot.replace(" ", "_") + rel + "_s.txt")
+        fileTxtName = dossier + mot.replace(" ", "_")
+        if(rel == ""):
+            fileTxtName += "_s.txt"
+        else:
+            fileTxtName += "_" + rel + "_s.txt"
+        fileTxtName = os.path.join(fileTxtName)
 
     try:
         filesize = os.path.getsize(fileTxtName)
-        # print("Ce fichier existe ")
     except OSError:
-        # print("Ce fichier n'existe pas")
         filesize = 0
 
     if filesize == 0:
         if entrant:
-            fileTxtName = os.path.join(dossier, mot.replace(" ", "_") + rel + "_e.txt")
+            fileTxtName = dossier + mot.replace(" ", "_")
+            if(rel == ""):
+                fileTxtName += "_e.txt"
+            else:
+                fileTxtName += "_" + rel + "_e.txt"        
+            fileTxtName = os.path.join(fileTxtName)
         else:
-            fileTxtName = os.path.join(dossier, mot.replace(" ", "_") + rel + "_s.txt")
+            fileTxtName = dossier + mot.replace(" ", "_")
+            if(rel == ""):
+                fileTxtName += "_s.txt"
+            else:
+                fileTxtName += "_" + rel + "_s.txt"
+            fileTxtName = os.path.join(fileTxtName)
 
         with open(fileTxtName, "w", encoding="utf-8") as fileTxt:
             fileTxt.write(str(prod))
@@ -102,24 +120,40 @@ def createJSON(mot, entrant, rel):
     
     # Construction du chemin complet du fichier JSON en fonction de l'entrée et de la relation
     if entrant:
-        fileJSONName = "src/json/" + mot + rel + "_e.json"
+        fileJSONName = "src/json/" + mot
+        if(rel == ""):
+            fileJSONName += "_e.json"
+        else:
+            fileJSONName += "_" + rel + "_e.json"
     else:
-        fileJSONName = "src/json/" + mot + rel + "_s.json"
+        fileJSONName = "src/json/" + mot
+        if(rel == ""):
+            fileJSONName += "_s.json"
+        else:
+            fileJSONName += "_" + rel + "_s.json"
     
     try:
         # Vérification de l'existence du fichier JSON
         filesize = os.path.getsize(fileJSONName)
-        # print("Ce fichier existe ")
     except OSError:
-        # print("Ce fichier n'existe pas")
         filesize = 0
 
     if True:
         # Ouverture du fichier texte en lecture
         if entrant:
-            fileTxt = open(os.path.join("src/txt/", mot + rel + "_e.txt"), "r", encoding="utf-8")
+            fileTxtName = "src/txt/" + mot
+            if(rel == ""):
+                fileTxtName += "_e.txt"
+            else:
+                fileTxtName += "_" + rel + "_e.txt"
+            fileTxt = open(os.path.join(fileTxtName), "r", encoding="utf-8")
         else:
-            fileTxt = open(os.path.join("src/txt/", mot + rel + "_s.txt"), "r", encoding="utf-8")
+            fileTxtName = "src/txt/" + mot
+            if(rel == ""):
+                fileTxtName += "_s.txt"
+            else:
+                fileTxtName += "_" + rel + "_s.txt"
+            fileTxt = open(os.path.join(fileTxtName), "r", encoding="utf-8")
         
         # Lecture des lignes du fichier texte
         lines = fileTxt.readlines()
@@ -198,11 +232,20 @@ def getData(mot,entrant,rel):
     createTxt(mot,entrant,rel)
     createJSON(mot,entrant,rel)
     mot = mot.replace(" ", "_")
+    mot = mot.replace("'", "")
     # Ouvrir le fichier  Json en lecture
     if entrant :
-        fileJSONName = "src/json/" + mot +rel+ "_e.json"
+        fileJSONName = "src/json/" + mot
+        if(rel == ""):
+            fileJSONName += "_e.json"
+        else:
+            fileJSONName += "_" + rel + "_e.json"
     else:
-        fileJSONName = "src/json/" + mot +rel+ "_s.json"
+        fileJSONName = "src/json/" + mot
+        if(rel == ""):
+            fileJSONName += "_s.json"
+        else:
+            fileJSONName += "_" + rel + "_s.json"
     fileJSON = open(fileJSONName, "r")
     data = json.load(fileJSON)
     fileJSON.close()
@@ -211,30 +254,20 @@ def getData(mot,entrant,rel):
 
 
 def getIdEnt(mot1, mot2, data):
-    # Extraction des données d'entités du fichier JSON
     json_entities = data["e"]
-
-    # Initialisation des identifiants d'entité et de mot
     mot2_id = -1
     mot1_id = -1
 
-    # Parcours de toutes les entités dans les données JSON
     for entity_key in json_entities:
-        # Récupération du nom de l'entité
         entity_name = json_entities[entity_key]['name']
-        
-        # Suppression des deux premières occurrences de guillemets simples pour le nom
         cleaned_entity_name = entity_name.replace("'", "", 2)
-        
-        # Vérification si l'entité correspond à l'entité recherchée
+
+        # Vérification si l'entité et le mot correspondent à ce qu'on veut
         if cleaned_entity_name == mot2 :
             mot2_id = entity_key
-        
-        # Vérification si l'entité correspond au mot recherché
         if cleaned_entity_name == mot1:
             mot1_id = entity_key
 
-    # Création du résultat contenant les identifiants d'entité et de mot
     result = {"mot2_id": mot2_id, "mot1_id": mot1_id}
     return result
 
@@ -250,9 +283,100 @@ def getIdRel(rel, data):
             break
     return idRt
 
+def isRelEntrante(idMot1, idRel, data):
+    jsonDataR = data["r"]
+    resultat = False
+    w = ""
+    for entity in jsonDataR:
+        x = jsonDataR[entity]['node1'].replace("'", "", 2)
+        y = jsonDataR[entity]['type'].replace("'", "", 2)
+        w = jsonDataR[entity]["w"]
+        
+        if x == idMot1 and y == idRel :
+            resultat = True
+
+            break
+    return [resultat,w]
 
 
-def isRelEntrante(idMot1, idMot2, idRel, data):
+def isRelDeductiveInductive(dataEnt, idRelation, limit, allEntities):
+    results = []
+    compteur = 0
+
+    for entity in allEntities:
+            teste = isRelEntrante(entity[0], idRelation, dataEnt)
+            isRelE = teste[0]
+            if isRelE:
+                if "-" not in teste[1]:
+                    results.append([entity[3].replace("'", ""), entity[1].replace("'", ""), entity[2].replace("'", "")])
+            compteur += 1
+            if compteur >= limit:
+                break
+    return results
+
+def getRelEntrante(data, idRt):
+    jsonDataE = data["e"]
+    jsonDataR = data["r"]
+    resultat = []
+
+    for relation in jsonDataR:
+        # S'il y a une relation de type idRt et que le poids est positif
+        if (jsonDataR[relation]['type'] == idRt and int(jsonDataR[relation]['w']) > 0):
+            node2 = jsonDataR[relation]['node1'].replace("'", "", 2)
+            # on vérifie également que le mot est de type 1 (bon format)
+            if (jsonDataE[node2]['type'] == '1'):
+                resultat.append([node2, jsonDataE[node2]['name'],jsonDataR[relation]['w']])
+    resultat = sorted(resultat,key=poids,reverse = True)
+    return resultat
+
+
+def getRelSortante(data, idRt):
+    jsonDataE = data["e"]
+    jsonDataR = data["r"]
+    resultat = []
+
+    for relation in jsonDataR:
+        # S'il y a une relation de type idRt et que le poids est positif
+        if (jsonDataR[relation]['type'] == idRt and int(jsonDataR[relation]['w']) > 0):
+            node2 = jsonDataR[relation]['node2'].replace("'", "", 2)
+            # on vérifie également que le mot est de type 1 (bon format)
+            if (jsonDataE[node2]['type'] == '1'):
+                resultat.append([node2, jsonDataE[node2]['name'],jsonDataR[relation]['w']])
+    resultat = sorted(resultat,key=poids,reverse = True)
+    return resultat
+
+
+
+
+# retourne les relations génériques (revoir lesquelles)
+def getGenerique(data, idMot,mot,rel):
+    dico_generalisation = {"r_isa": "6", "r_holo": "10"}
+    if rel in dico_generalisation:
+        del dico_generalisation[rel]
+    resultat = {}
+    for key in dico_generalisation:
+        resultat[key] = getRelSortante(data, dico_generalisation[key])
+
+    return resultat
+
+
+# retourne les relations spécifiques (revoir lesquelles)
+def getSpecifique(data, idMot,mot,rel):
+    dico_specialisation = {"r_hypo": "8", "r_has_part": "9"}
+    if rel in dico_specialisation:
+        del dico_specialisation[rel]
+    resultat = {}
+    for key in dico_specialisation:
+        resultat[key] = getRelSortante(data, dico_specialisation[key])
+    return resultat
+
+
+
+
+def poids(M):
+    return int(M[2])
+
+def isRelation(data, idMot1, idMot2, idRel):
     jsonDataR = data["r"]
     resultat = False
     w = ""
@@ -267,32 +391,31 @@ def isRelEntrante(idMot1, idMot2, idRel, data):
             resultat = True
 
             break
-    #print(resultat)
     return [resultat,w]
 
-
-# la fonction marche pas, l'appel à isRelEntrante renvoie tjr False | peut-être une erreur de type (str/int)
-def isRelInductive(idMot1, idMot2, idRel, data):
-    json_relations = data["r"]
-    json_entities = data["e"]
-    resultat = False
+def relSynonyme(data, dataEnt, limit):
+    idRelSyn = getIdRel("r_syn", data)
+    #synonymes = isRelSynonyme(dataEnt, idMot1, idMot2, idRelSyn, 20)
+    syn1 = getRelSortante(data, idRelSyn)
+    syn2 = getRelEntrante(dataEnt, idRelSyn)
+    # TODO : on itère le plus petit des deux pour gagner du temps
+    limitFiles = 5
+    resultat = []
     w = ""
-    idRelationIsa = getIdRel("r_isa", data)
-    compteur = 0
-    limit = 10 # limite de mots pris / à voir  selon le temps de traitement
-
-    for relation in json_relations:
-        if json_relations[relation]['type'] == '6' and json_relations[relation]['node1'] == idMot1 and int(json_relations[relation]['w']) > 0:
-        # s'il s'agit d'un mot1 is_a XX
-            allData = json_relations[relation]
-            #print(json_entities[allData['node2']]['name'], allData["w"])
-            isRel = isRelEntrante(str(allData['node2']), str(idMot2), str(idRel), data)
-            print(str(allData['node2']), str(idMot2), str(idRel), allData["node2"]["name"])
-            print(isRel)
-            if isRel[0] == True:
-                print(isRel)
-
-        # stop au bout de [limit] mots
-        compteur += 1
-        if compteur >= limit:
-            break
+    for i in range(limitFiles):
+        s1 = syn1[i]
+        dataEntree = getData(s1[1].replace("'", ""),True, "r_agent-1")
+        relations = dataEntree["r"]
+        for entity in relations:
+            node1 = relations[entity]['node1'].replace("'", "", 2)
+            type = relations[entity]['type'].replace("'", "", 2)
+            node2 = relations[entity]['node2'].replace("'", "", 2)
+            w = relations[entity]["w"]
+            
+            for j in range(limit):
+                if node2 == syn2[j][0].replace("'", ""):
+                    poids = int(s1[2]) + int(syn2[j][2]) + int(w)
+                    resultat.append([syn1[i][1], syn2[j][1], poids])
+                    break
+    #resultat = sorted(resultat,key=poids,reverse = True)
+    return resultat
